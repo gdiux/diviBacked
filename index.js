@@ -28,8 +28,8 @@ dbConection();
 app.use(express.static('public'));
 
 // RUTAS
-app.use('/api/login', require('./routes/auth.route'));
-app.use('/api/users', require('./routes/users.route'));
+app.use('/api/v1/login', require('./routes/auth.route'));
+app.use('/api/v1/users', require('./routes/users.route'));
 
 // SPA
 app.get('*', (req, res) => {
