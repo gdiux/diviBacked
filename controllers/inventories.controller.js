@@ -1,28 +1,27 @@
 const { response } = require('express');
 
-const Client = require('../models/clients.model');
+const Inventory = require('../models/inventories.model');
 
 /** ======================================================================
- *  GET CLIENTS
+ *  GET INVENTORY
 =========================================================================*/
-const getClientsQuery = async(req, res) => {
+const getInventoriesQuery = async(req, res) => {
 
     try {
 
         const { desde, hasta, sort, ...query } = req.body;
 
-        const [clients, total] = await Promise.all([
-
-            Client.find(query)
+        const [inventories, total] = await Promise.all([
+            Inventory.find(query)
             .limit(hasta)
             .skip(desde)
             .sort(sort),
-            Client.countDocuments({ status: true })
+            Inventory.countDocuments({ status: true })
         ])
 
         res.json({
             ok: true,
-            clients,
+            inventories,
             total
         });
 
@@ -39,24 +38,24 @@ const getClientsQuery = async(req, res) => {
 };
 
 /** =====================================================================
- *  GET CLIENT ID
+ *  GET INVENTORY ID
 =========================================================================*/
-const getClientId = async(req, res = response) => {
+const getInventoryId = async(req, res = response) => {
 
     try {
-        const id = req.params.id;
+        const invid = req.params.id;
 
-        const clientDB = await Client.findById(id);
-        if (!clientDB) {
+        const inventoryDB = await Inventory.findById(invid);
+        if (!inventoryDB) {
             return res.status(400).json({
                 ok: false,
-                msg: 'No hemos encontrado este cliente, porfavor intente nuevamente.'
+                msg: 'No hemos encontrado este inventario, porfavor intente nuevamente.'
             });
         }
 
         res.json({
             ok: true,
-            client: clientDB
+            inventory: inventoryDB
         });
 
 
@@ -71,37 +70,34 @@ const getClientId = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  CREATE CLIENT
+ *  CREATE INVENTORY
 =========================================================================*/
-const createClient = async(req, res = response) => {
+const createInventory = async(req, res = response) => {
 
-    let { numberid, email } = req.body;
+    let { currency } = req.body;
 
-    numberid = numberid.trim();
-    email = email.trim();
+    currency = currency.trim();
 
     try {
 
-        const validateClient = await Client.findOne({ numberid });
+        const validate = await Inventory.findOne({ currency });
 
-        if (validateClient) {
+        if (validate) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Ya existe un cliente con este numero de identificación'
+                msg: 'Ya existe una moneda con este nombre'
             });
         }
 
-        const client = new Client(req.body);
+        const inventory = new Inventory(req.body);
+        inventory.currency = currency;
 
-        client.email = email;
-        client.numberid = numberid;
-
-        // SAVE USER
-        await client.save();
+        // SAVE
+        await inventory.save();
 
         res.json({
             ok: true,
-            client
+            inventory
         });
 
     } catch (error) {
@@ -114,44 +110,44 @@ const createClient = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  UPDATE CLIENT
+ *  UPDATE INVENTORY
 =========================================================================*/
-const updateClient = async(req, res = response) => {
+const updateInventory = async(req, res = response) => {
 
-    const cid = req.params.id;
+    const invid = req.params.id;
 
     try {
 
         // SEARCH
-        const clientDB = await Client.findById(cid);
-        if (!clientDB) {
+        const inventoryDB = await Inventory.findById(invid);
+        if (!inventoryDB) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe ningun cliente con este ID'
+                msg: 'No existe ninguna moneda con este ID'
             });
         }
         // SEARCH
 
         // VALIDATE
-        const { numberid, ...campos } = req.body;
-        if (clientDB.numberid !== numberid) {
-            const validateNumberId = await Client.findOne({ numberid });
-            if (validateNumberId) {
+        const { currency, ...campos } = req.body;
+        if (inventoryDB.currency !== currency) {
+            const validateCurrency = await Inventory.findOne({ currency });
+            if (validateCurrency) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Ya existe un cliente con este numero de identificación...'
+                    msg: 'Ya existe una moneda con este nombre...'
                 });
             }
 
-            campos.numberid = numberid;
+            campos.currency = currency.trim();
         }
 
         // UPDATE
-        const clientUpdate = await Client.findByIdAndUpdate(cid, campos, { new: true, useFindAndModify: false });
+        const inventoryUpdate = await Inventory.findByIdAndUpdate(invid, campos, { new: true, useFindAndModify: false });
 
         res.json({
             ok: true,
-            client: clientUpdate
+            inventory: inventoryUpdate
         });
 
     } catch (error) {
@@ -167,8 +163,8 @@ const updateClient = async(req, res = response) => {
 
 // EXPORTS
 module.exports = {
-    getClientsQuery,
-    createClient,
-    updateClient,
-    getClientId
+    getInventoriesQuery,
+    createInventory,
+    updateInventory,
+    getInventoryId
 };

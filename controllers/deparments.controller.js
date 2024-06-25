@@ -1,28 +1,27 @@
 const { response } = require('express');
 
-const Client = require('../models/clients.model');
+const Department = require('../models/departments.model');
 
 /** ======================================================================
- *  GET CLIENTS
+ *  GET DEPARTMENT
 =========================================================================*/
-const getClientsQuery = async(req, res) => {
+const getDepartmentsQuery = async(req, res) => {
 
     try {
 
         const { desde, hasta, sort, ...query } = req.body;
 
-        const [clients, total] = await Promise.all([
-
-            Client.find(query)
+        const [departments, total] = await Promise.all([
+            Department.find(query)
             .limit(hasta)
             .skip(desde)
             .sort(sort),
-            Client.countDocuments({ status: true })
+            Department.countDocuments({ status: true })
         ])
 
         res.json({
             ok: true,
-            clients,
+            departments,
             total
         });
 
@@ -39,24 +38,24 @@ const getClientsQuery = async(req, res) => {
 };
 
 /** =====================================================================
- *  GET CLIENT ID
+ *  GET DEPARTMENT ID
 =========================================================================*/
-const getClientId = async(req, res = response) => {
+const getDepartmentId = async(req, res = response) => {
 
     try {
-        const id = req.params.id;
+        const depid = req.params.id;
 
-        const clientDB = await Client.findById(id);
-        if (!clientDB) {
+        const departmentDB = await Department.findById(depid);
+        if (!departmentDB) {
             return res.status(400).json({
                 ok: false,
-                msg: 'No hemos encontrado este cliente, porfavor intente nuevamente.'
+                msg: 'No hemos encontrado este departamento, porfavor intente nuevamente.'
             });
         }
 
         res.json({
             ok: true,
-            client: clientDB
+            department: departmentDB
         });
 
 
@@ -71,37 +70,35 @@ const getClientId = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  CREATE CLIENT
+ *  CREATE DEPARTMENT
 =========================================================================*/
-const createClient = async(req, res = response) => {
+const createDepartment = async(req, res = response) => {
 
-    let { numberid, email } = req.body;
+    let { code } = req.body;
 
-    numberid = numberid.trim();
-    email = email.trim();
+    code = code.trim();
 
     try {
 
-        const validateClient = await Client.findOne({ numberid });
+        const validateDepartment = await Department.findOne({ code });
 
-        if (validateClient) {
+        if (validateDepartment) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Ya existe un cliente con este numero de identificación'
+                msg: 'Ya existe un departamento con este numero de codigo'
             });
         }
 
-        const client = new Client(req.body);
+        const department = new Department(req.body);
 
-        client.email = email;
-        client.numberid = numberid;
+        department.code = code;
 
-        // SAVE USER
-        await client.save();
+        // SAVE
+        await department.save();
 
         res.json({
             ok: true,
-            client
+            department
         });
 
     } catch (error) {
@@ -114,44 +111,44 @@ const createClient = async(req, res = response) => {
 };
 
 /** =====================================================================
- *  UPDATE CLIENT
+ *  UPDATE DEPARTMETN
 =========================================================================*/
-const updateClient = async(req, res = response) => {
+const updateDepartment = async(req, res = response) => {
 
-    const cid = req.params.id;
+    const depid = req.params.id;
 
     try {
 
         // SEARCH
-        const clientDB = await Client.findById(cid);
-        if (!clientDB) {
+        const departmentDB = await Department.findById(depid);
+        if (!departmentDB) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe ningun cliente con este ID'
+                msg: 'No existe ningun departamento con este ID'
             });
         }
         // SEARCH
 
         // VALIDATE
-        const { numberid, ...campos } = req.body;
-        if (clientDB.numberid !== numberid) {
-            const validateNumberId = await Client.findOne({ numberid });
-            if (validateNumberId) {
+        const { code, ...campos } = req.body;
+        if (departmentDB.code !== code) {
+            const validateCode = await City.findOne({ code });
+            if (validateCode) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Ya existe un cliente con este numero de identificación...'
+                    msg: 'Ya existe un departamento con este codigo...'
                 });
             }
 
-            campos.numberid = numberid;
+            campos.code = code.trim();
         }
 
         // UPDATE
-        const clientUpdate = await Client.findByIdAndUpdate(cid, campos, { new: true, useFindAndModify: false });
+        const departmentUpdate = await Department.findByIdAndUpdate(depid, campos, { new: true, useFindAndModify: false });
 
         res.json({
             ok: true,
-            client: clientUpdate
+            department: departmentUpdate
         });
 
     } catch (error) {
@@ -167,8 +164,8 @@ const updateClient = async(req, res = response) => {
 
 // EXPORTS
 module.exports = {
-    getClientsQuery,
-    createClient,
-    updateClient,
-    getClientId
+    getDepartmentsQuery,
+    createDepartment,
+    updateDepartment,
+    getDepartmentId
 };

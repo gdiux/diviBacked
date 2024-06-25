@@ -4,7 +4,8 @@ const InvetorySchema = Schema({
 
     currency: {
         type: String,
-        require: true
+        require: true,
+        unique: true
     },
 
     amount: {
