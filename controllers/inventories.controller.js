@@ -1,6 +1,6 @@
 const { response } = require('express');
 
-const Inventory = require('../models/inventories.model');
+const Inventory = require('../models/inventory.model');
 
 /** ======================================================================
  *  GET INVENTORY

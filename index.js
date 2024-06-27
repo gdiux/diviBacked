@@ -28,6 +28,10 @@ dbConection();
 app.use(express.static('public'));
 
 // RUTAS
+app.use('/api/v1/cities', require('./routes/cities.route'));
+app.use('/api/v1/clients', require('./routes/clients.route'));
+app.use('/api/v1/departments', require('./routes/departments.route'));
+app.use('/api/v1/inventory', require('./routes/inventory.route'));
 app.use('/api/v1/login', require('./routes/auth.route'));
 app.use('/api/v1/users', require('./routes/users.route'));
 
